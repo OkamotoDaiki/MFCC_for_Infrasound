@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd ../script
-python 
+cd ./script
+python run_mfcc.py
