@@ -232,7 +232,7 @@ def main():
     feature_mode_list = ["mfcc_and_delta-ceps", "mfcc", "delta-ceps"] #生成する特徴量の種類
     label_list = [config["label_1"], config["label_0"]] #ラベルの判定要素
     supervise_data_fpath = config["supervise_data_fpath"] #教師データのフォルダパス
-    place_name_fpath = config["place_name_fpath"]
+    place_name_fpath = config["place_name_fpath"] #観測点を抽出するための初期値
     fs = config["fs"] #サンプリングレート
     numChannels = config["numChannels"] #MFCCのチャネル数
     fo = config["fo"] #MFCCの周波数パラメータ
