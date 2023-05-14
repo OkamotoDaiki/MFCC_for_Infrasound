@@ -19,7 +19,7 @@ fo = config["fo"] #MFCCの周波数パラメータ
 nframe = config["nframe"] #窓幅
 
 
-def WritePickle(object_data, fpath, fname):
+def write_pickle(object_data, fpath, fname):
     """
     Save binary data with pickle module.
     
@@ -30,7 +30,7 @@ def WritePickle(object_data, fpath, fname):
     return 0
 
 
-def TransformMLFormat(count_label, *args):
+def transform_ML_format(count_label, *args):
     """
     mfcc ML data format : save pkl and [label, mfcc_data, delta_ceps]
     """
@@ -42,7 +42,7 @@ def TransformMLFormat(count_label, *args):
     return [count_label, feature]
 
 
-def GetMFCC(data, fs=2, numChannels=20):
+def get_mfcc(data, fs=2, numChannels=20):
     """
     Get MFCC from mfcc script
     """
@@ -55,18 +55,18 @@ def GetMFCC(data, fs=2, numChannels=20):
     return mfcc_data
 
 
-def SepFrame(data, nframe=nframe, ov=0.75):
+def separate_frame(data, nframe=nframe, ov=0.75):
     """
     Separate data with nframe length including overlap.
     number of frame is, int(1 + ((N/ nframe) - 1) / (1 - ov))
     """
-    def RestractOverlapValue(ov):
+    def restart_overlap_value(ov):
         if ov < 0 or ov > 1:
             print("overlap rate have to set 0 < ov < 1.")
             sys.exit()
         return 0
 
-    def GetStartWindow(shift, N):
+    def get_start_window(shift, N):
         """
         Get numbers array of window for overlap
         """
@@ -77,7 +77,7 @@ def SepFrame(data, nframe=nframe, ov=0.75):
             i+=1
         return start_window
 
-    def GetCombforWindow(start_window, nframe):
+    def get_comb_for_window(start_window, nframe):
         """
         Get combinations window both ends.
         """
@@ -94,9 +94,9 @@ def SepFrame(data, nframe=nframe, ov=0.75):
         #print(combs)
         return combs
     
-    def GetWindowData(combs, data):
+    def get_window_data(combs, data):
         """
-        Get window data with output from GetCombforWindow function
+        Get window data with output from get_comb_for_window function
         """
         all_sep_data = []
         for comb in combs:
@@ -112,55 +112,55 @@ def SepFrame(data, nframe=nframe, ov=0.75):
         return all_sep_data
 
     #debug
-    RestractOverlapValue(ov)
+    restart_overlap_value(ov)
 
     #edit now
     N = len(data)
     shift = nframe * (1 - ov)
     
-    start_window = GetStartWindow(shift, N)
-    combs = GetCombforWindow(start_window, nframe)
-    all_sep_data = GetWindowData(combs, data)
+    start_window = get_start_window(shift, N)
+    combs = get_comb_for_window(start_window, nframe)
+    all_sep_data = get_window_data(combs, data)
     #edit end
     return all_sep_data
 
 
-def DeltaCeps(data):
+def get_delta_ceps(data):
     """
     Flow calculating delta cepstrum. The mfcc module does the calculation of delta cepstrum.
     bug:
     """
     #delta cepstrum
     #print("delta cepstrum...")
-    sep_data = SepFrame(data, nframe=nframe)
-    mfcc_list = [GetMFCC(data) for data in sep_data]
+    sep_data = separate_frame(data, nframe=nframe)
+    mfcc_list = [get_mfcc(data) for data in sep_data]
     cutpoint = list(set([len(mfcc_data) for mfcc_data in mfcc_list]))[0]
     delta_cepstrum = mfcc.DeltaCepstrum(mfcc_list, cutpoint=cutpoint)
     #print(delta_cepstrum)
     return delta_cepstrum
 
 
-def ChoiceFeature(feature_mode, label, data, fs):
+def choose_feature(feature_mode, label, data, fs):
     """
     Adjust choice feature.
     """
     if feature_mode == 'mfcc_and_delta-ceps':
-        mfcc_data = GetMFCC(data, fs=fs)
-        delta_ceps = DeltaCeps(data)
-        ML_format_data = TransformMLFormat(label, mfcc_data, delta_ceps)
+        mfcc_data = get_mfcc(data, fs=fs)
+        delta_ceps = get_delta_ceps(data)
+        ML_format_data = transform_ML_format(label, mfcc_data, delta_ceps)
     elif feature_mode == 'mfcc':
-        mfcc_data = GetMFCC(data, fs=fs)
-        ML_format_data = TransformMLFormat(label, mfcc_data)
+        mfcc_data = get_mfcc(data, fs=fs)
+        ML_format_data = transform_ML_format(label, mfcc_data)
     elif feature_mode == 'delta-ceps':
-        delta_ceps = DeltaCeps(data)
-        ML_format_data = TransformMLFormat(label, delta_ceps)
+        delta_ceps = get_delta_ceps(data)
+        ML_format_data = transform_ML_format(label, delta_ceps)
     else:
         print("Error : Wrong inputing feature_mode. Modify script")
         sys.exit()
     return ML_format_data
 
 
-def ModifyFileStructure(feature_mode_list, threshold_variable_list, pkl_folder_fpath, label_list):
+def modify_file_structure(feature_mode_list, threshold_variable_list, pkl_folder_fpath, label_list):
     """
     Modify File Structure for input machine learning.
     Because of being different from GSC file structure. This method is to the same structure of GSC directory.
@@ -185,7 +185,7 @@ def ModifyFileStructure(feature_mode_list, threshold_variable_list, pkl_folder_f
     return 0
 
 
-def ReadSeqData(csv_fpath):
+def read_preprocessed_data(csv_fpath):
     """
     Read preprocessed infrasound data.
     """
@@ -197,7 +197,7 @@ def ReadSeqData(csv_fpath):
     return times, data
 
 
-def GetMLobject(label_list, threshold_variable, place_name, fs=2):
+def get_ML_object(label_list, threshold_variable, place_name, fs=2):
     """
     Generate object of transforming to MFCC.
     """
@@ -222,7 +222,7 @@ def GetMLobject(label_list, threshold_variable, place_name, fs=2):
         place_fpath = label_fpath + "/" + place_name
         csv_fpaths = glob.glob(place_fpath + "/*.csv")
         for csv_fpath in csv_fpaths:
-            times, data = ReadSeqData(csv_fpath)
+            times, data = read_preprocessed_data(csv_fpath)
             required_data = [label, fs, data]
             write_ML_data.append(required_data)
     return write_ML_data
@@ -255,7 +255,7 @@ def main():
     threshold_variable_list = OperateFpath.GetAllMultiFolder(supervise_data_fpath)
     place_name_list = OperateFpath.GetAllMultiFolder(place_name_fpath)
     print("Generate folder for pkl file.")
-    ModifyFileStructure(feature_mode_list, threshold_variable_list, pkl_folder_fpath, label_list)
+    modify_file_structure(feature_mode_list, threshold_variable_list, pkl_folder_fpath, label_list)
 
     #read csv data.
     for feature_mode in feature_mode_list:
@@ -265,7 +265,7 @@ def main():
                 save_fpath = pkl_folder_fpath + "/" + feature_mode + "/" + threshold_variable + "/" + place_name
                 print("save fpath = \n{}".format(save_fpath))
                 print("Generate object data for transform feature...")
-                object_data = GetMLobject(label_list, threshold_variable, place_name, fs=fs)
+                object_data = get_ML_object(label_list, threshold_variable, place_name, fs=fs)
                 data_length = len(object_data)
                 #write pkl
                 pkl_file_number = 0
@@ -275,9 +275,9 @@ def main():
                     cut_data = object_data[i][_data_number]
                     try:
                         #print("Generate feature vector..")
-                        ML_format_data = ChoiceFeature(feature_mode, label, cut_data, fs)
+                        ML_format_data = choose_feature(feature_mode, label, cut_data, fs)
                         save_fname = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
-                        WritePickle(ML_format_data, save_fname, save_fname)
+                        write_pickle(ML_format_data, save_fname, save_fname)
                         pkl_file_number += 1
                     except ZeroDivisionError:
                         zero_div_count += 1
