@@ -17,7 +17,6 @@ def write_pickle(object_data, fpath, fname):
     """
     with open(fpath, 'wb') as f:
         pickle.dump(object_data, f)
-    #print("Save '{}'".format(fpath))
     return 0
 
 
@@ -28,8 +27,6 @@ def transform_ML_format(count_label, *args):
     feature = []
     for arg in args:
         feature = feature + list(arg)
-    #print(feature)
-    #print("feature dim = {}".format(len(feature)))
     return [count_label, feature]
 
 
@@ -69,9 +66,7 @@ def separate_frame(data, nframe, ov):
         """
         Get combinations window both ends.
         """
-        #print("length of start_window = {}".format(len(start_window)))
         combs = []
-        #num_array_first_nframe = start_window.index(nframe)
 
         for i in range(len(start_window)):
             if start_window[i] + nframe <= start_window[-1]:
@@ -79,7 +74,6 @@ def separate_frame(data, nframe, ov):
                 combs.append(comb)
             else:
                 break
-        #print(combs)
         return combs
     
     def get_window_data(combs, data):
@@ -119,12 +113,10 @@ def get_delta_ceps(data, fs, numChannels, fo, nframe, ov):
     bug:
     """
     #delta cepstrum
-    #print("delta cepstrum...")
     sep_data = separate_frame(data, nframe, ov)
     mfcc_list = [get_mfcc(data, fs, numChannels, fo) for data in sep_data]
     cutpoint = list(set([len(mfcc_data) for mfcc_data in mfcc_list]))[0]
     delta_cepstrum = mfcc.DeltaCepstrum(mfcc_list, cutpoint=cutpoint)
-    #print(delta_cepstrum)
     return delta_cepstrum
 
 
@@ -270,7 +262,6 @@ def main():
                     fs = object_data[i][_fs_number]
                     cut_data = object_data[i][_data_number]
                     try:
-                        #print("Generate feature vector..")
                         ML_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels, fo, nframe, ov)
                         save_fname = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
                         write_pickle(ML_format_data, save_fname, save_fname)
