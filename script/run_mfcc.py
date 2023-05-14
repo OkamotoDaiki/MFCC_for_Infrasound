@@ -259,7 +259,7 @@ def main():
             for place_name in place_name_list:
                 zero_div_count = 0
                 save_fpath = pkl_folder_fpath + "/" + feature_mode + "/" + threshold_variable + "/" + place_name
-                print("save fpath = \n{}".format(save_fpath))
+                print("save fpath = ".format(save_fpath))
                 print("Generate object data for transform feature...")
                 object_data = get_ML_object(label_list, threshold_variable, place_name, fs=fs)
                 data_length = len(object_data)
