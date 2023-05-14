@@ -16,8 +16,6 @@ with open('./config.json', 'r', encoding='utf-8') as f:
 
 #freq parameter
 fo = config["fo"] #MFCCの周波数パラメータ
-nframe = config["nframe"] #窓幅
-
 
 def write_pickle(object_data, fpath, fname):
     """
@@ -52,7 +50,7 @@ def get_mfcc(data, fs, numChannels):
     return mfcc_data
 
 
-def separate_frame(data, nframe=nframe, ov=0.75):
+def separate_frame(data, nframe, ov):
     """
     Separate data with nframe length including overlap.
     number of frame is, int(1 + ((N/ nframe) - 1) / (1 - ov))
@@ -122,14 +120,14 @@ def separate_frame(data, nframe=nframe, ov=0.75):
     return all_sep_data
 
 
-def get_delta_ceps(data, fs, numChannels):
+def get_delta_ceps(data, fs, numChannels, nframe, ov):
     """
     Flow calculating delta cepstrum. The mfcc module does the calculation of delta cepstrum.
     bug:
     """
     #delta cepstrum
     #print("delta cepstrum...")
-    sep_data = separate_frame(data, nframe=nframe)
+    sep_data = separate_frame(data, nframe, ov)
     mfcc_list = [get_mfcc(data, fs, numChannels) for data in sep_data]
     cutpoint = list(set([len(mfcc_data) for mfcc_data in mfcc_list]))[0]
     delta_cepstrum = mfcc.DeltaCepstrum(mfcc_list, cutpoint=cutpoint)
@@ -137,19 +135,19 @@ def get_delta_ceps(data, fs, numChannels):
     return delta_cepstrum
 
 
-def choose_feature(feature_mode, label, data, fs, numChannels):
+def choose_feature(feature_mode, label, data, fs, numChannels, nframe, ov):
     """
     Adjust choice feature.
     """
     if feature_mode == 'mfcc_and_delta-ceps':
         mfcc_data = get_mfcc(data, fs, numChannels)
-        delta_ceps = get_delta_ceps(data, fs, numChannels)
+        delta_ceps = get_delta_ceps(data, fs, numChannels, nframe, ov)
         ML_format_data = transform_ML_format(label, mfcc_data, delta_ceps)
     elif feature_mode == 'mfcc':
         mfcc_data = get_mfcc(data, fs, numChannels)
         ML_format_data = transform_ML_format(label, mfcc_data)
     elif feature_mode == 'delta-ceps':
-        delta_ceps = get_delta_ceps(data, fs, numChannels)
+        delta_ceps = get_delta_ceps(data, fs, numChannels, nframe, ov)
         ML_format_data = transform_ML_format(label, delta_ceps)
     else:
         print("Error : Wrong inputing feature_mode. Modify script")
@@ -240,6 +238,8 @@ def main():
     supervise_data_fpath = config["supervise_data_fpath"] #教師データのフォルダパス
     place_name_fpath = config["place_name_fpath"]
     numChannels = config["numChannels"] #MFCCのチャネル数
+    ov = config["ov"] #オーバーラップ率
+    nframe = config["nframe"] #窓幅
 
     #Generate saving pkl file
     pkl_folder_fpath = config["pkl_folder_fpath"] #出力ファイルのフォルダパス
@@ -273,7 +273,7 @@ def main():
                     cut_data = object_data[i][_data_number]
                     try:
                         #print("Generate feature vector..")
-                        ML_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels)
+                        ML_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels, nframe, ov)
                         save_fname = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
                         write_pickle(ML_format_data, save_fname, save_fname)
                         pkl_file_number += 1
