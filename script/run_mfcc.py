@@ -8,7 +8,7 @@ import pickle
 import json
 #my module
 from mfcc import mfcc
-from subscript import OperateFpath
+from subscript import operate_fpath
 
 def write_pickle(object_data, fpath, fname):
     """
@@ -158,7 +158,7 @@ def modify_file_structure(feature_mode_list, threshold_variable_list, pkl_folder
             }
 
             for key_value in filepaths.items():           
-                folder_names = OperateFpath.GetAllMultiFolder(key_value[1])
+                folder_names = operate_fpath.get_all_multi_folder(key_value[1])
                 for target_obs in folder_names:
                     pkl_target_fpath =  pkl_threshold_fpath + "/" + target_obs
                     os.mkdir(pkl_target_fpath)
@@ -243,8 +243,8 @@ def main():
         os.mkdir(pkl_folder_fpath)
 
     #Get threshold variable directory
-    threshold_variable_list = OperateFpath.GetAllMultiFolder(supervise_data_fpath)
-    place_name_list = OperateFpath.GetAllMultiFolder(place_name_fpath)
+    threshold_variable_list = operate_fpath.get_all_multi_folder(supervise_data_fpath)
+    place_name_list = operate_fpath.get_all_multi_folder(place_name_fpath)
     print("Generate folder for pkl file.")
     modify_file_structure(feature_mode_list, threshold_variable_list, pkl_folder_fpath, label_list)
 
