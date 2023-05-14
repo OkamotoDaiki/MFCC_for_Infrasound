@@ -10,13 +10,6 @@ import json
 from mfcc import mfcc
 from subscript import OperateFpath
 
-# JSONファイルを読み込む
-with open('./config.json', 'r', encoding='utf-8') as f:
-    config = json.load(f)
-
-#freq parameter
-fo = config["fo"] #MFCCの周波数パラメータ
-
 def write_pickle(object_data, fpath, fname):
     """
     Save binary data with pickle module.
@@ -40,7 +33,7 @@ def transform_ML_format(count_label, *args):
     return [count_label, feature]
 
 
-def get_mfcc(data, fs, numChannels):
+def get_mfcc(data, fs, numChannels, fo):
     """
     Get MFCC from mfcc script
     """
@@ -120,7 +113,7 @@ def separate_frame(data, nframe, ov):
     return all_sep_data
 
 
-def get_delta_ceps(data, fs, numChannels, nframe, ov):
+def get_delta_ceps(data, fs, numChannels, fo, nframe, ov):
     """
     Flow calculating delta cepstrum. The mfcc module does the calculation of delta cepstrum.
     bug:
@@ -128,26 +121,26 @@ def get_delta_ceps(data, fs, numChannels, nframe, ov):
     #delta cepstrum
     #print("delta cepstrum...")
     sep_data = separate_frame(data, nframe, ov)
-    mfcc_list = [get_mfcc(data, fs, numChannels) for data in sep_data]
+    mfcc_list = [get_mfcc(data, fs, numChannels, fo) for data in sep_data]
     cutpoint = list(set([len(mfcc_data) for mfcc_data in mfcc_list]))[0]
     delta_cepstrum = mfcc.DeltaCepstrum(mfcc_list, cutpoint=cutpoint)
     #print(delta_cepstrum)
     return delta_cepstrum
 
 
-def choose_feature(feature_mode, label, data, fs, numChannels, nframe, ov):
+def choose_feature(feature_mode, label, data, fs, numChannels, fo, nframe, ov):
     """
     Adjust choice feature.
     """
     if feature_mode == 'mfcc_and_delta-ceps':
-        mfcc_data = get_mfcc(data, fs, numChannels)
-        delta_ceps = get_delta_ceps(data, fs, numChannels, nframe, ov)
+        mfcc_data = get_mfcc(data, fs, numChannels, fo)
+        delta_ceps = get_delta_ceps(data, fs, numChannels, fo, nframe, ov)
         ML_format_data = transform_ML_format(label, mfcc_data, delta_ceps)
     elif feature_mode == 'mfcc':
-        mfcc_data = get_mfcc(data, fs, numChannels)
+        mfcc_data = get_mfcc(data, fs, numChannels, fo)
         ML_format_data = transform_ML_format(label, mfcc_data)
     elif feature_mode == 'delta-ceps':
-        delta_ceps = get_delta_ceps(data, fs, numChannels, nframe, ov)
+        delta_ceps = get_delta_ceps(data, fs, numChannels, fo, nframe, ov)
         ML_format_data = transform_ML_format(label, delta_ceps)
     else:
         print("Error : Wrong inputing feature_mode. Modify script")
@@ -224,8 +217,11 @@ def get_ML_object(label_list, threshold_variable, place_name, fs=2):
 
 
 def main():
+    # JSONファイルを読み込む
+    with open('./config.json', 'r', encoding='utf-8') as f:
+        config = json.load(f)
+
     #init
-    fs = config["fs"] #サンプリングレート
     """
     object_dataの構造
     object_data = [教師ラベル, サンプリングレート, データ列]
@@ -237,7 +233,9 @@ def main():
     label_list = [config["label_1"], config["label_0"]] #ラベルの判定要素
     supervise_data_fpath = config["supervise_data_fpath"] #教師データのフォルダパス
     place_name_fpath = config["place_name_fpath"]
+    fs = config["fs"] #サンプリングレート
     numChannels = config["numChannels"] #MFCCのチャネル数
+    fo = config["fo"] #MFCCの周波数パラメータ
     ov = config["ov"] #オーバーラップ率
     nframe = config["nframe"] #窓幅
 
@@ -273,7 +271,7 @@ def main():
                     cut_data = object_data[i][_data_number]
                     try:
                         #print("Generate feature vector..")
-                        ML_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels, nframe, ov)
+                        ML_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels, fo, nframe, ov)
                         save_fname = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
                         write_pickle(ML_format_data, save_fname, save_fname)
                         pkl_file_number += 1
