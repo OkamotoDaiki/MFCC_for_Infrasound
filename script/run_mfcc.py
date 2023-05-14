@@ -177,7 +177,7 @@ def read_preprocessed_data(csv_fpath):
     return times, data
 
 
-def get_ML_object(label_list, threshold_variable, place_name, fs=2):
+def get_ML_object(label_list, threshold_variable, place_name, fs):
     """
     Generate object of transforming to MFCC.
     """
@@ -256,7 +256,7 @@ def main():
                 save_fpath = pkl_folder_fpath + "/" + feature_mode + "/" + threshold_variable + "/" + place_name
                 print("Save fpath = {}".format(save_fpath))
                 print("Generate object data for transform feature...")
-                object_data = get_ML_object(label_list, threshold_variable, place_name, fs=fs)
+                object_data = get_ML_object(label_list, threshold_variable, place_name, fs)
                 data_length = len(object_data)
                 #write pkl
                 pkl_file_number = 0
