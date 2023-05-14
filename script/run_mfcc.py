@@ -282,7 +282,7 @@ def main():
                     except ZeroDivisionError:
                         zero_div_count += 1
                         print("Error: zero division calculating mean.")
-                print("Nmber of generating pkl file = {}".format(pkl_file_number))
+                print("Number of generating pkl file = {}".format(pkl_file_number))
                 print("Zero division count = {}".format(zero_div_count))
     print("finish")
     return 0
