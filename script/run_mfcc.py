@@ -36,7 +36,7 @@ def get_mfcc(data, fs, numChannels, cutpoint, fo, mel, p_filter):
     """
     N = len(data)
     MFCCclass_obj = mfcc.MFCCclass(data, fs, N, numChannels, cutpoint, fo, mel, p_filter)
-    mfcc_data = MFCCclass_obj.MFCC()
+    mfcc_data = MFCCclass_obj.mfcc()
     return mfcc_data
 
 
@@ -116,7 +116,7 @@ def get_delta_ceps(data, fs, numChannels, cutpoint, fo, mel, p_filter, nframe, o
     sep_data = separate_frame(data, nframe, ov)
     mfcc_list = [get_mfcc(data, fs, numChannels, cutpoint, fo, mel, p_filter) for data in sep_data]
     cutpoint = list(set([len(mfcc_data) for mfcc_data in mfcc_list]))[0]
-    delta_cepstrum = mfcc.DeltaCepstrum(mfcc_list, cutpoint=cutpoint)
+    delta_cepstrum = mfcc.delta_cepstrum(mfcc_list, cutpoint=cutpoint)
     return delta_cepstrum
 
 

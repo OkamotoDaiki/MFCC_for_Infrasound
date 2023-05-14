@@ -39,14 +39,14 @@ class MFCCclass():
         """
         Make PreEmphasisFilter using hamming window. constant p_filter = 0.97.
         """
-        def PreEmphasis(signals, p):
+        def get_preEmphasis(signals, p):
             """
             Make FIR[1.0, -9] filter.
             """
             return scipy.signal.lfilter([1.0,-p],1,signals)
 
         #p_filter: プレエンファシスフィルタ
-        return PreEmphasis(self.input_signal, self.p_filter)  
+        return get_preEmphasis(self.input_signal, self.p_filter)  
 
 
     def melFilterBank(self):
@@ -103,7 +103,7 @@ class MFCCclass():
         return filterbank, fcenters
 
 
-    def FindCutPoint(self, freq_seq, nq_fft_list):
+    def find_cutpoint(self, freq_seq, nq_fft_list):
         """
         Find Cutpoint for highpass-filter.
         """
@@ -130,7 +130,7 @@ class MFCCclass():
         return min_freq, min_array_number, threshold_list
 
 
-    def HighpassFilter(self, freq_seq, fft_data, dF):
+    def highpassfilter(self, freq_seq, fft_data, dF):
         """
         Highpass Filter
         """
@@ -147,21 +147,21 @@ class MFCCclass():
         return fft_highpass
 
 
-    def MFCC(self):
+    def mfcc(self):
         """
         Get MFCC from transfroming spectrum.
         Cutpoint have a role cutting mel filter bank. Defalut is 12.
         """
-        def Mean(array):
+        def get_mean(array):
             return sum(array) / len(array)
 
-        def AssignMeanToZero(array):
+        def assign_mean_to_zero(array):
             """
             If antilogarithm is 0, assign mean with other data
             """
             zero_array_numbers = [i for i in range(len(array)) if array[i] == 0]
             not_zero_array_numbers = [i for i in range(len(array)) if array[i] != 0]
-            mean = Mean(not_zero_array_numbers)
+            mean = get_mean(not_zero_array_numbers)
             for i in zero_array_numbers:
                 array[i] = mean
             return array
@@ -174,18 +174,18 @@ class MFCCclass():
         #higpass-filter        
         #freq_seq = np.arange(0, self.fs, dF)
         #nq_fft_list = abs(fft_data)[:int(self.N / 2)]
-        #min_freq, min_array_number, threshold_list = self.FindCutPoint(freq_seq, nq_fft_list)
-        #fft_highpass = self.HighpassFilter(freq_seq, fft_data, dF, min_array_number)
+        #min_freq, min_array_number, threshold_list = self.find_cutpoint(freq_seq, nq_fft_list)
+        #fft_highpass = self.highpassfilter(freq_seq, fft_data, dF, min_array_number)
 
         filterbank, fcenters = self.melFilterBank() #フィルタバンクを求める
         inner_product_fbank = np.dot(fft_data, filterbank.T)
-        modify_dot = AssignMeanToZero(inner_product_fbank)
+        modify_dot = assign_mean_to_zero(inner_product_fbank)
         mspec = np.log10(modify_dot) #スペクトル領域にフィルタバンクをかける
         ceps = scipy.fftpack.realtransforms.dct(mspec,type=2,norm="ortho",axis=-1) #離散コサイン変換
         return ceps[1:self.cutpoint+1]
 
 
-    def GetMelfilterbank(self, fname):
+    def get_melfilterbank(self, fname):
         """
         Generate Mel-filterbank graph.
         """
@@ -207,7 +207,7 @@ class MFCCclass():
         return 0
 
 
-def DeltaCepstrum(mfcc_list, cutpoint=12):
+def delta_cepstrum(mfcc_list, cutpoint=12):
     """
     Calculate delta-cepstrum.
     """
