@@ -1,0 +1,10 @@
+{
+    "fo" : 0.4,
+    "nframe" : 256,
+    "fs" : 2,
+    "supervise_data_fpath" : "../supervise_data/",
+    "place_name_fpath" : "../supervise_data/0div10mag/supervise_label_1",
+    "pkl_folder_fpath" : "../pkl_file",
+    "label_0" : "label_noise",
+    "label_1" : "label_signal"
+}

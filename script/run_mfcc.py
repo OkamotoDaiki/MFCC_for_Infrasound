@@ -5,13 +5,18 @@ import shutil
 import os
 import glob
 import pickle
+import json
 #my module
 from mfcc import mfcc
 from subscript import OperateFpath
 
+# JSONファイルを読み込む
+with open('./config.json', 'r', encoding='utf-8') as f:
+    config = json.load(f)
+
 #freq parameter
-fo = 0.4
-nframe = 256
+fo = config["fo"] #MFCCの周波数パラメータ
+nframe = config["nframe"] #窓幅
 
 
 def WritePickle(object_data, fpath, fname):
@@ -225,17 +230,21 @@ def GetMLobject(label_list, threshold_variable, place_name, fs=2):
 
 def main():
     #init
-    fs = 2
-    label_number = 0
-    fs_number = 1
-    data_number = 2
-    feature_mode_list = ["mfcc_and_delta-ceps", "mfcc", "delta-ceps"]
-    label_list = ["label_signal", "label_noise"]
-    supervise_data_fpath = "../supervise_data/"
-    place_name_fpath = "../supervise_data/0div10mag/supervise_label_1"
+    fs = config["fs"] #サンプリングレート
+    """
+    object_dataの構造
+    object_data = [教師ラベル, サンプリングレート, データ列]
+    """
+    _label_number = 0 #object_dataのラベルが書かれている要素番号
+    _fs_number = 1 #object_dataのサンプリングレートが書かれている要素番号
+    _data_number = 2 #object_dataのデータが書かれている要素番号
+    feature_mode_list = ["mfcc_and_delta-ceps", "mfcc", "delta-ceps"] #生成する特徴量の種類
+    label_list = [config["label_1"], config["label_0"]] #ラベルの判定要素
+    supervise_data_fpath = config["supervise_data_fpath"] #教師データのフォルダパス
+    place_name_fpath = config["place_name_fpath"]
 
     #Generate saving pkl file
-    pkl_folder_fpath = "../" + "pkl_file"
+    pkl_folder_fpath = config["pkl_folder_fpath"] #出力ファイルのフォルダパス
     try:
         shutil.rmtree(pkl_folder_fpath)
         os.mkdir(pkl_folder_fpath)
@@ -261,9 +270,9 @@ def main():
                 #write pkl
                 pkl_file_number = 0
                 for i in range(data_length):
-                    label = object_data[i][label_number]
-                    fs = object_data[i][fs_number]
-                    cut_data = object_data[i][data_number]
+                    label = object_data[i][_label_number]
+                    fs = object_data[i][_fs_number]
+                    cut_data = object_data[i][_data_number]
                     try:
                         #print("Generate feature vector..")
                         ML_format_data = ChoiceFeature(feature_mode, label, cut_data, fs)
