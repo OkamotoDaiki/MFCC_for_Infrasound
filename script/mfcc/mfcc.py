@@ -17,7 +17,7 @@ class MFCCclass():
     """
     This class is to make MFCC with signal. Output 12 dimention vector.
     """
-    def __init__(self, input_signal, fs, N, numChannels, fo, mel, cutpoint):
+    def __init__(self, input_signal, fs, N, numChannels, fo, mel, cutpoint, p_filter):
         """
         numChannels: number of filterbank
         fs: sampling rate
@@ -32,11 +32,12 @@ class MFCCclass():
         self.fo = fo
         self.mel = mel
         self.cutpoint = cutpoint
+        self.p_filter = p_filter
 
 
     def PreEmphasisFilter(self):
         """
-        Make PreEmphasisFilter using hamming window. constant p = 0.97.
+        Make PreEmphasisFilter using hamming window. constant p_filter = 0.97.
         """
         def PreEmphasis(signals, p):
             """
@@ -44,10 +45,8 @@ class MFCCclass():
             """
             return scipy.signal.lfilter([1.0,-p],1,signals)
 
-
-        #プレエンファシスフィルタ
-        p = 0.97
-        return PreEmphasis(self.input_signal, p)  
+        #p_filter: プレエンファシスフィルタ
+        return PreEmphasis(self.input_signal, self.p_filter)  
 
 
     def melFilterBank(self):

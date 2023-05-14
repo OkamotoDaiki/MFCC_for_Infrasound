@@ -6,6 +6,7 @@
     "cutpoint" : 12,
     "ov" : 0.75,
     "mel" : 1000,
+    "p_filter" : 0.97,
     "supervise_data_fpath" : "../supervise_data/",
     "place_name_fpath" : "../supervise_data/0div10mag/supervise_label_1",
     "pkl_folder_fpath" : "../pkl_file",
