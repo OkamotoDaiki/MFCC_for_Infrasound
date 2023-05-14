@@ -3,6 +3,7 @@
     "nframe" : 256,
     "fs" : 2,
     "numChannels" : 20,
+    "cutpoint" : 12,
     "ov" : 0.75,
     "mel" : 1000,
     "supervise_data_fpath" : "../supervise_data/",

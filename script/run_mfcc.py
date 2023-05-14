@@ -30,12 +30,12 @@ def transform_ML_format(count_label, *args):
     return [count_label, feature]
 
 
-def get_mfcc(data, fs, numChannels, fo, mel):
+def get_mfcc(data, fs, numChannels, cutpoint, fo, mel):
     """
     Get MFCC from mfcc script
     """
     N = len(data)
-    MFCCclass_obj = mfcc.MFCCclass(data,fs,N,numChannels, fo, mel)
+    MFCCclass_obj = mfcc.MFCCclass(data, fs, N, numChannels, cutpoint, fo, mel)
     mfcc_data = MFCCclass_obj.MFCC()
     return mfcc_data
 
@@ -107,32 +107,32 @@ def separate_frame(data, nframe, ov):
     return all_sep_data
 
 
-def get_delta_ceps(data, fs, numChannels, fo, mel, nframe, ov):
+def get_delta_ceps(data, fs, numChannels, cutpoint, fo, mel, nframe, ov):
     """
     Flow calculating delta cepstrum. The mfcc module does the calculation of delta cepstrum.
     bug:
     """
     #delta cepstrum
     sep_data = separate_frame(data, nframe, ov)
-    mfcc_list = [get_mfcc(data, fs, numChannels, fo, mel) for data in sep_data]
+    mfcc_list = [get_mfcc(data, fs, numChannels, cutpoint, fo, mel) for data in sep_data]
     cutpoint = list(set([len(mfcc_data) for mfcc_data in mfcc_list]))[0]
     delta_cepstrum = mfcc.DeltaCepstrum(mfcc_list, cutpoint=cutpoint)
     return delta_cepstrum
 
 
-def choose_feature(feature_mode, label, data, fs, numChannels, fo, mel, nframe, ov):
+def choose_feature(feature_mode, label, data, fs, numChannels, cutpoint, fo, mel, nframe, ov):
     """
     Adjust choice feature.
     """
     if feature_mode == 'mfcc_and_delta-ceps':
-        mfcc_data = get_mfcc(data, fs, numChannels, fo, mel)
-        delta_ceps = get_delta_ceps(data, fs, numChannels, fo, mel, nframe, ov)
+        mfcc_data = get_mfcc(data, fs, numChannels, cutpoint, fo, mel)
+        delta_ceps = get_delta_ceps(data, fs, numChannels, cutpoint, fo, mel, nframe, ov)
         ML_format_data = transform_ML_format(label, mfcc_data, delta_ceps)
     elif feature_mode == 'mfcc':
-        mfcc_data = get_mfcc(data, fs, numChannels, fo, mel)
+        mfcc_data = get_mfcc(data, fs, numChannels, cutpoint, fo, mel)
         ML_format_data = transform_ML_format(label, mfcc_data)
     elif feature_mode == 'delta-ceps':
-        delta_ceps = get_delta_ceps(data, fs, numChannels, fo, mel, nframe, ov)
+        delta_ceps = get_delta_ceps(data, fs, numChannels, cutpoint, fo, mel, nframe, ov)
         ML_format_data = transform_ML_format(label, delta_ceps)
     else:
         print("Error : Wrong inputing feature_mode. Modify script")
@@ -227,6 +227,7 @@ def main():
     place_name_fpath = config["place_name_fpath"] #観測点を抽出するための初期値
     fs = config["fs"] #サンプリングレート
     numChannels = config["numChannels"] #MFCCのチャネル数
+    cutpoint = config["cutpoint"] #MFCCのチャネル数のカットポイント
     fo = config["fo"] #MFCCの周波数パラメータ
     mel = config["mel"] #MFCCにおけるメル尺度パラメータ
     ov = config["ov"] #オーバーラップ率
@@ -263,7 +264,7 @@ def main():
                     fs = object_data[i][_fs_number]
                     cut_data = object_data[i][_data_number]
                     try:
-                        ML_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels, fo, mel, nframe, ov)
+                        ML_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels, cutpoint, fo, mel, nframe, ov)
                         save_fname = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
                         write_pickle(ML_format_data, save_fname, save_fname)
                         pkl_file_number += 1

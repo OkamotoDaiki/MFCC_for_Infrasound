@@ -17,7 +17,7 @@ class MFCCclass():
     """
     This class is to make MFCC with signal. Output 12 dimention vector.
     """
-    def __init__(self,input_signal,fs,N,numChannels, fo, mel):
+    def __init__(self, input_signal, fs, N, numChannels, fo, mel, cutpoint):
         """
         numChannels: number of filterbank
         fs: sampling rate
@@ -31,6 +31,7 @@ class MFCCclass():
         self.numChannels = numChannels
         self.fo = fo
         self.mel = mel
+        self.cutpoint = cutpoint
 
 
     def PreEmphasisFilter(self):
@@ -130,11 +131,11 @@ class MFCCclass():
         return min_freq, min_array_number, threshold_list
 
 
-    def HighpassFilter(self, freq_seq, fft_data, dF, cutpoint):
+    def HighpassFilter(self, freq_seq, fft_data, dF):
         """
         Highpass Filter
         """
-        fc = dF * cutpoint
+        fc = dF * self.cutpoint
         fft_highpass = copy.copy(fft_data)
 
         count = 0
@@ -147,7 +148,7 @@ class MFCCclass():
         return fft_highpass
 
 
-    def MFCC(self, cutpoint=12):
+    def MFCC(self):
         """
         Get MFCC from transfroming spectrum.
         Cutpoint have a role cutting mel filter bank. Defalut is 12.
@@ -182,7 +183,7 @@ class MFCCclass():
         modify_dot = AssignMeanToZero(inner_product_fbank)
         mspec = np.log10(modify_dot) #スペクトル領域にフィルタバンクをかける
         ceps = scipy.fftpack.realtransforms.dct(mspec,type=2,norm="ortho",axis=-1) #離散コサイン変換
-        return ceps[1:cutpoint+1]
+        return ceps[1:self.cutpoint+1]
 
 
     def GetMelfilterbank(self, fname):
