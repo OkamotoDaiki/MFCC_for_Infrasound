@@ -17,7 +17,7 @@ class MFCCclass():
     """
     This class is to make MFCC with signal. Output 12 dimention vector.
     """
-    def __init__(self,input_signal,fs,N,numChannels=20):
+    def __init__(self,input_signal,fs,N,numChannels, fo, mel):
         """
         numChannels: number of filterbank
         fs: sampling rate
@@ -29,6 +29,8 @@ class MFCCclass():
         self.fs = fs
         self.N = N
         self.numChannels = numChannels
+        self.fo = fo
+        self.mel = mel
 
 
     def PreEmphasisFilter(self):
@@ -47,24 +49,24 @@ class MFCCclass():
         return PreEmphasis(self.input_signal, p)  
 
 
-    def melFilterBank(self, fo=1, mel=1000):
+    def melFilterBank(self):
         """
         Get mel filter bank.
         """
-        mo = mel / np.log((mel / fo) + 1)
+        mo = self.mel / np.log((self.mel / self.fo) + 1)
         
         def Hz2mel(f):
             """
             transform Hz to mel.
             """
-            return mo * np.log(f / fo + 1.0)
+            return mo * np.log(f / self.fo + 1.0)
         
 
         def mel2hz(m):
             """
             transform mel to Hz
             """
-            return fo * (np.exp(m / mo) - 1.0)
+            return self.fo * (np.exp(m / mo) - 1.0)
 
         fmax = self.fs / 2 #ナイキスト周波数
         melmax = Hz2mel(fmax) #ナイキスト周波数(mel)
@@ -145,7 +147,7 @@ class MFCCclass():
         return fft_highpass
 
 
-    def MFCC(self, fo=0.4, mel=1000, cutpoint=12):
+    def MFCC(self, cutpoint=12):
         """
         Get MFCC from transfroming spectrum.
         Cutpoint have a role cutting mel filter bank. Defalut is 12.
@@ -175,7 +177,7 @@ class MFCCclass():
         #min_freq, min_array_number, threshold_list = self.FindCutPoint(freq_seq, nq_fft_list)
         #fft_highpass = self.HighpassFilter(freq_seq, fft_data, dF, min_array_number)
 
-        filterbank, fcenters = self.melFilterBank(fo, mel) #フィルタバンクを求める
+        filterbank, fcenters = self.melFilterBank() #フィルタバンクを求める
         inner_product_fbank = np.dot(fft_data, filterbank.T)
         modify_dot = AssignMeanToZero(inner_product_fbank)
         mspec = np.log10(modify_dot) #スペクトル領域にフィルタバンクをかける
@@ -183,7 +185,7 @@ class MFCCclass():
         return ceps[1:cutpoint+1]
 
 
-    def GetMelfilterbank(self, fo, fname):
+    def GetMelfilterbank(self, fname):
         """
         Generate Mel-filterbank graph.
         """
@@ -192,7 +194,7 @@ class MFCCclass():
         matplotlib.use('Agg')
         import matplotlib.pyplot as plt
         plt.clf()
-        filterbank, fcenters = self.melFilterBank(fo=fo)
+        filterbank, fcenters = self.melFilterBank()
         #周波数解像度
         df = self.fs / self.N
         for i in np.arange(0, self.numChannels):
