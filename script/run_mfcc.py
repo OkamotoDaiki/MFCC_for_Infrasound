@@ -46,12 +46,9 @@ def get_mfcc(data, fs=2, numChannels=20):
     """
     Get MFCC from mfcc script
     """
-    numChannels = 20
     N = len(data)
-    #print(N)
     MFCCclass_obj = mfcc.MFCCclass(data,fs,N,numChannels)
     mfcc_data = MFCCclass_obj.MFCC(fo=fo)
-    #print(mfcc_data)
     return mfcc_data
 
 
