@@ -10,7 +10,7 @@ import json
 from mfcc import mfcc
 from subscript import operate_fpath
 
-def write_pickle(object_data, fpath, fname):
+def write_pickle(object_data, fpath):
     """
     Save binary data with pickle module.
     
@@ -267,7 +267,7 @@ def main():
                     try:
                         ML_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels, cutpoint, fo, mel, p_filter, nframe, ov)
                         save_fname = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
-                        write_pickle(ML_format_data, save_fname, save_fname)
+                        write_pickle(ML_format_data, save_fname)
                         pkl_file_number += 1
                     except ZeroDivisionError:
                         zero_div_count += 1
