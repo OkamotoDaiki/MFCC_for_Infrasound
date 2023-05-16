@@ -17,7 +17,7 @@ class MFCCclass():
     """
     This class is to make MFCC with signal. Output 12 dimention vector.
     """
-    def __init__(self, input_signal, fs, N, numChannels=20, fo=0.4, mel=1000, cutpoint=12, p_filter=0.97):
+    def __init__(self, input_signal, fs, N, numChannels=20, cutpoint=12, fo=0.4, mel=1000, p_filter=0.97):
         """
         numChannels: number of filterbank
         fs: sampling rate

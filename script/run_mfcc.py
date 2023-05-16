@@ -20,6 +20,15 @@ def write_pickle(object_data, fpath):
     return 0
 
 
+def write_csv(data, file_name):
+    # リストをpandasのDataFrameに変換
+    df = pd.DataFrame(data, columns=['Data'])
+
+    # DataFrameをCSVに書き込み
+    df.to_csv(file_name, index=False)
+    return 0
+
+
 def transform_ML_format(count_label, *args):
     """
     mfcc ML data format : save pkl and [label, mfcc_data, delta_ceps]
@@ -28,6 +37,16 @@ def transform_ML_format(count_label, *args):
     for arg in args:
         feature = feature + list(arg)
     return [count_label, feature]
+
+
+def transform_csv_format(*args):
+    """
+    mfcc ML data format : save pkl and [label, mfcc_data, delta_ceps]
+    """
+    feature = []
+    for arg in args:
+        feature = feature + list(arg)
+    return feature
 
 
 def get_mfcc(data, fs, numChannels, cutpoint, fo, mel, p_filter):
@@ -128,16 +147,19 @@ def choose_feature(feature_mode, label, data, fs, numChannels, cutpoint, fo, mel
         mfcc_data = get_mfcc(data, fs, numChannels, cutpoint, fo, mel, p_filter)
         delta_ceps = get_delta_ceps(data, fs, numChannels, cutpoint, fo, mel, p_filter, nframe, ov)
         ML_format_data = transform_ML_format(label, mfcc_data, delta_ceps)
+        csv_format_data = transform_csv_format(mfcc_data, delta_ceps)
     elif feature_mode == 'mfcc':
         mfcc_data = get_mfcc(data, fs, numChannels, cutpoint, fo, mel, p_filter)
         ML_format_data = transform_ML_format(label, mfcc_data)
+        csv_format_data = transform_csv_format(mfcc_data)
     elif feature_mode == 'delta-ceps':
         delta_ceps = get_delta_ceps(data, fs, numChannels, cutpoint, fo, mel, p_filter, nframe, ov)
         ML_format_data = transform_ML_format(label, delta_ceps)
+        csv_format_data = transform_csv_format(delta_ceps)
     else:
         print("Error : Wrong inputing feature_mode. Modify script")
         sys.exit()
-    return ML_format_data
+    return ML_format_data, csv_format_data
 
 
 def modify_file_structure(feature_mode_list, threshold_variable_list, pkl_folder_fpath, label_list):
@@ -265,9 +287,11 @@ def main():
                     fs = object_data[i][_fs_number]
                     cut_data = object_data[i][_data_number]
                     try:
-                        ML_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels, cutpoint, fo, mel, p_filter, nframe, ov)
-                        save_fname = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
-                        write_pickle(ML_format_data, save_fname)
+                        ML_format_data, csv_format_data = choose_feature(feature_mode, label, cut_data, fs, numChannels, cutpoint, fo, mel, p_filter, nframe, ov)
+                        save_fname_pkl = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
+                        save_fname_csv = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".csv"
+                        write_pickle(ML_format_data, save_fname_pkl)
+                        #write_csv(csv_format_data, save_fname_csv)
                         pkl_file_number += 1
                     except ZeroDivisionError:
                         zero_div_count += 1
