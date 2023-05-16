@@ -25,6 +25,15 @@ def WritePickle(object_data, fpath, fname):
     return 0
 
 
+def write_csv(data, file_name):
+    # リストをpandasのDataFrameに変換
+    df = pd.DataFrame(data, columns=['Data'])
+
+    # DataFrameをCSVに書き込み
+    df.to_csv(file_name, index=False)
+    return 0
+
+
 def TransformMLFormat(count_label, *args):
     """
     mfcc ML data format : save pkl and [label, mfcc_data, delta_ceps]
@@ -35,6 +44,16 @@ def TransformMLFormat(count_label, *args):
     #print(feature)
     #print("feature dim = {}".format(len(feature)))
     return [count_label, feature]
+
+
+def transform_csv_format(*args):
+    """
+    mfcc ML data format : save pkl and [label, mfcc_data, delta_ceps]
+    """
+    feature = []
+    for arg in args:
+        feature = feature + list(arg)
+    return feature
 
 
 def GetMFCC(data, fs=2, numChannels=20):
@@ -143,16 +162,19 @@ def ChoiceFeature(feature_mode, label, data, fs):
         mfcc_data = GetMFCC(data, fs=fs)
         delta_ceps = DeltaCeps(data)
         ML_format_data = TransformMLFormat(label, mfcc_data, delta_ceps)
+        csv_format_data = transform_csv_format(mfcc_data, delta_ceps)
     elif feature_mode == 'mfcc':
         mfcc_data = GetMFCC(data, fs=fs)
         ML_format_data = TransformMLFormat(label, mfcc_data)
+        csv_format_data = transform_csv_format(mfcc_data)
     elif feature_mode == 'delta-ceps':
         delta_ceps = DeltaCeps(data)
         ML_format_data = TransformMLFormat(label, delta_ceps)
+        csv_format_data = transform_csv_format(delta_ceps)
     else:
         print("Error : Wrong inputing feature_mode. Modify script")
         sys.exit()
-    return ML_format_data
+    return ML_format_data, csv_format_data
 
 
 def ModifyFileStructure(feature_mode_list, threshold_variable_list, pkl_folder_fpath, label_list):
@@ -266,9 +288,11 @@ def main():
                     cut_data = object_data[i][data_number]
                     try:
                         #print("Generate feature vector..")
-                        ML_format_data = ChoiceFeature(feature_mode, label, cut_data, fs)
-                        save_fname = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
-                        WritePickle(ML_format_data, save_fname, save_fname)
+                        ML_format_data, csv_format_data = ChoiceFeature(feature_mode, label, cut_data, fs)
+                        save_fname_pkl = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".pkl"
+                        save_fname_csv = save_fpath + "/" + "label_" + str(label) + "_" + str(i) + "_" + feature_mode + ".csv"
+                        WritePickle(ML_format_data, save_fname_pkl, save_fname_pkl)
+                        #write_csv(csv_format_data, save_fname_csv)
                         pkl_file_number += 1
                     except ZeroDivisionError:
                         zero_div_count += 1
